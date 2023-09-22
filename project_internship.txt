@@ -1,0 +1,61 @@
+#include <Servo.h>
+#include <LiquidCrystal_I2C.h>
+
+// Define servo pin
+#define SERVO_PIN 10
+
+// Define IR sensor pins
+#define IR_SENSOR_1_PIN 2
+#define IR_SENSOR_2_PIN 3
+
+// Define LCD display address
+#define LCD_ADDRESS 0x27
+
+// Create a servo object
+Servo servo;
+
+// Create a LiquidCrystal object
+LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
+
+// Define the parking status message
+const char* PARKING_STATUS_MESSAGE = "Parking status:";
+
+void setup() {
+  // Attach the servo to the servo pin
+  servo.attach(SERVO_PIN);
+
+  // Initialize the LCD display
+  lcd.init();
+  lcd.backlight();
+
+// Set the servo to the closed position
+  servo.write(0);
+}
+
+void loop() {
+  // Check the status of the IR sensors
+  bool slot1Occupied = digitalRead(IR_SENSOR_1_PIN) == LOW;
+  bool slot2Occupied = digitalRead(IR_SENSOR_2_PIN) == LOW;
+
+  // Update the LCD display with the parking status
+  lcd.clear();
+  lcd.print(PARKING_STATUS_MESSAGE);
+  lcd.setCursor(0, 1);
+  lcd.print("Slot 1:");
+lcd.print(slot1Occupied ? "Occupied" : "Empty");
+  lcd.print("     Slot 2:");
+  lcd.print(slot2Occupied ? "Occupied" : "Empty");
+
+  // Open the servo if both slots are empty
+  if (!slot1Occupied && !slot2Occupied) {
+    servo.write(90);
+  }
+
+  // Close the servo if either slot is occupied
+  if (slot1Occupied || slot2Occupied) {
+    servo.write(0);
+  }
+
+  // Delay for 1 second
+  delay(1000);
+}
